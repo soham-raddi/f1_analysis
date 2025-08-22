@@ -8,7 +8,7 @@ fastf1.Cache.enable_cache("./cache")
 def constructor_standings(year: int, debug: bool = False, include_sprint_wins_podiums: bool = False) -> pd.DataFrame:
     current_year = datetime.now().year
     if year < 1950 or year > current_year:
-        raise ValueError(f"Please enter a year between 1959 and {current_year}")
+        raise ValueError(f"Please enter a year between 1950 and {current_year}")
 
     schedule = fastf1.get_event_schedule(year, include_testing=False)
 
@@ -17,22 +17,22 @@ def constructor_standings(year: int, debug: bool = False, include_sprint_wins_po
 
     gp_points = defaultdict(float)       # main race points
     sprint_points = defaultdict(float)   # Sprint points
-    team_wins = defaultdict(int)
-    team_podiums = defaultdict(int)
+    team_wins = defaultdict(int)         # wins
+    team_podiums = defaultdict(int)      # podiums
 
     # Debug dictionaries
     gp_points_debug = defaultdict(list)
     sprint_points_debug = defaultdict(list)
 
-    # Process main race results
-    for _, ev in schedule.iterrows():
+    # main race results
+    for i, ev in schedule.iterrows():
         rnd = int(ev["RoundNumber"])
         try:
             race = fastf1.get_session(year, rnd, "R")
             race.load()
             r = race.results
 
-            for _, row in r.iterrows():
+            for i, row in r.iterrows():
                 team = row["TeamName"]
                 pts = float(row["Points"])
                 pos = int(row["Position"])
@@ -50,7 +50,7 @@ def constructor_standings(year: int, debug: bool = False, include_sprint_wins_po
             continue
 
     # for sprint results
-    for _, ev in schedule.iterrows():
+    for i, ev in schedule.iterrows():
         rnd = int(ev["RoundNumber"])
         sprint = None
         try:
@@ -64,7 +64,7 @@ def constructor_standings(year: int, debug: bool = False, include_sprint_wins_po
                 continue  # if there is no sprint session, skip
 
         if sprint is not None and sprint.results is not None:
-            for _, row in sprint.results.iterrows():
+            for i, row in sprint.results.iterrows():
                 team = row["TeamName"]
                 pts = float(row["Points"])
                 sprint_points[team] += pts
@@ -89,7 +89,7 @@ def constructor_standings(year: int, debug: bool = False, include_sprint_wins_po
     df.index += 1
     return df
 
-#main function to run the standings for a given year
+# main function to run the script
 if __name__ == "__main__":
     year = int(input("Enter season year (e.g., 2023): ").strip())
     table = constructor_standings(year, debug=True, include_sprint_wins_podiums=False)
