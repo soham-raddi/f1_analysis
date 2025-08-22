@@ -1,7 +1,7 @@
 import fastf1
 import fastf1.plotting as f1plot
 from fastf1.core import DataNotLoadedError
-fastf1.Cache.enable_cache('C:\\Users\\Soham\\Codes\\github repos\\f1_analysis\\cache')
+fastf1.Cache.enable_cache('./cache')
 
 def main():
     year = int(input("Enter year (e.g., 2021): "))
