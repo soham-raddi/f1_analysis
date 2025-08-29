@@ -17,6 +17,7 @@ def driver_standings(year: int, debug: bool = False, include_sprint_wins_podiums
     sprint_points = defaultdict(float)  # sprint points
     wins = defaultdict(int)             # wins
     podiums = defaultdict(int)          # podiums
+    driver_names = {}                   # driver names
 
     # debug dictionaries
     if debug:
@@ -42,6 +43,9 @@ def driver_standings(year: int, debug: bool = False, include_sprint_wins_podiums
                     wins[drv] += 1
                 if pos <= 3:
                     podiums[drv] += 1
+                    
+                if drv not in driver_names:
+                    driver_names[drv] = f"{row['Abbreviation']} ({row['FullName']})"
 
         except Exception as e:
             if debug:
@@ -76,30 +80,13 @@ def driver_standings(year: int, debug: bool = False, include_sprint_wins_podiums
                         wins[drv] += 1
                     if pos <= 3:
                         podiums[drv] += 1
-
-    driver_names = {}
-    for i, ev in schedule.iterrows():
-        try:
-            session = fastf1.get_session(year, int(ev["RoundNumber"]), "R")
-            session.load()
-            for i, row in session.results.iterrows():
-                driver_names[row["DriverNumber"]] = f"{row['Abbreviation']} ({row['FullName']})"
-        except Exception:
-            continue
+                        
+                if drv not in driver_names:
+                    driver_names[drv] = f"{row['Abbreviation']} ({row['FullName']})"
 
     # combine sprint and gp points
     total_points = {drv: gp_points[drv] + sprint_points[drv]
                     for drv in set(gp_points.keys()) | set(sprint_points.keys())}
-
-    if debug:
-        print("\nPoints breakdown:")
-        for drv in sorted(total_points.keys()):
-            print(f"\n{driver_names.get(drv, drv)}:")
-            print(f"  GP points: {gp_points_debug[drv]}")
-            print(f"  Sprint points: {sprint_points_debug[drv]}")
-            print(f"  GP total: {gp_points[drv]}")
-            print(f"  Sprint total: {sprint_points[drv]}")
-            print(f"  Combined total: {total_points[drv]}")
 
     # final table
     df = pd.DataFrame(
